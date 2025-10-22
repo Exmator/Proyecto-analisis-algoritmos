@@ -1,3 +1,4 @@
+from collections import defaultdict, deque
 class Game:
     def __init__(self, matrix):
         self.matrix = matrix
@@ -115,6 +116,34 @@ class Game:
         print("No bridge exists between", coord1, "and", coord2)
         return False
 
+    def are_all_islands_connected(self):
+        # Build adjacency list
+        adjacency = defaultdict(list)
+        for (a, b, count) in self.bridges:
+            adjacency[a].append(b)
+            adjacency[b].append(a)
+
+        # Find all islands
+        islands = [(i, j) for i in range(self.rows) for j in range(self.cols) if self.matrix[i][j] > 0]
+        if not islands:
+            return True  # No islands to connect
+
+        # BFS from the first island
+        start = islands[0]
+        visited = set()
+        queue = deque([start])
+        visited.add(start)
+
+        while queue:
+            current = queue.popleft()
+            for neighbor in adjacency[current]:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append(neighbor)
+
+        # Check if all islands were visited
+        return all(island in visited for island in islands)
+
     # Check if the current game state is solved
     def is_solved(self):
         # Count bridges connected to each island
@@ -132,6 +161,9 @@ class Game:
                 if self.matrix[i][j] > 0:
                     if connection_count[i][j] != self.matrix[i][j]:
                         return False
+        # Verify all islands are connected
+        if not self.are_all_islands_connected():
+            return False
         return True
     
     # Getters
