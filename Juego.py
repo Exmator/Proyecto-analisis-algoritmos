@@ -28,17 +28,17 @@ class Game:
 
         # Must be aligned horizontally or vertically
         if x1 != x2 and y1 != y2:
-            print("Bridges must be horizontal or vertical.")
+            #print("Bridges must be horizontal or vertical.")
             return False
 
         # Must be different coordinates
         if (x1, y1) == (x2, y2):
-            print("Cannot place a bridge on the same island.")
+            #print("Cannot place a bridge on the same island.")
             return False
 
         # Must both be islands (nonzero)
         if self.matrix[x1][y1] == 0 or self.matrix[x2][y2] == 0:
-            print("Both endpoints must be islands.")
+            #print("Both endpoints must be islands.")
             return False
 
         # Walk the cells between the islands (exclusive of endpoints)
@@ -48,27 +48,27 @@ class Game:
             for y in range(y1 + step, y2, step):
                 # Can't pass through other islands
                 if self.matrix[x1][y] != 0:
-                    print("Bridges cannot pass through islands.")
+                    #print("Bridges cannot pass through islands.")
                     return False
                 # Can't cross an existing bridge — but ignore the bridge that connects these two islands
                 for b in self.bridges:
                     if self._same_edge(coord1, coord2, b):
                         continue
                     if self._crosses_bridge((x1, y), b):
-                        print("Bridge crossing detected with:", b)
+                        #print("Bridge crossing detected with:", b)
                         return False
         else:
             # vertical (same column, varying row)
             step = 1 if x2 > x1 else -1
             for x in range(x1 + step, x2, step):
                 if self.matrix[x][y1] != 0:
-                    print("Bridges cannot pass through islands.")
+                    #print("Bridges cannot pass through islands.")
                     return False
                 for b in self.bridges:
                     if self._same_edge(coord1, coord2, b):
                         continue
                     if self._crosses_bridge((x, y1), b):
-                        print("Bridge crossing detected with:", b)
+                        #print("Bridge crossing detected with:", b)
                         return False
 
         # Also ensure that adding this bridge would not exceed either island's required degree.
@@ -98,7 +98,7 @@ class Game:
                     self.bridges[i] = (a, b, count + 1)
                     return True
                 else:
-                    print("Maximum of 2 bridges already placed.")
+                    #print("Maximum of 2 bridges already placed.")
                     return False
         # Add new bridge
         self.bridges.append((coord1, coord2, 1))
@@ -171,3 +171,41 @@ class Game:
         return self.matrix
     def get_bridges(self):
         return self.bridges
+
+    def print_game_state(self):
+        # Create a grid for visualization
+        # We might need to expand the grid or just use the cells.
+        # Bridges take up space between islands.
+        # Assuming the matrix represents the grid coordinates directly.
+        
+        display_grid = [[' ' for _ in range(self.cols)] for _ in range(self.rows)]
+        
+        # Place islands
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if self.matrix[r][c] > 0:
+                    display_grid[r][c] = str(self.matrix[r][c])
+                else:
+                    display_grid[r][c] = '.'
+
+        # Place bridges
+        for (u, v, count) in self.bridges:
+            r1, c1 = u
+            r2, c2 = v
+            
+            if r1 == r2: # Horizontal
+                step = 1 if c2 > c1 else -1
+                char = '-' if count == 1 else '='
+                for c in range(c1 + step, c2, step):
+                    display_grid[r1][c] = char
+            else: # Vertical
+                step = 1 if r2 > r1 else -1
+                char = '|' if count == 1 else '"'
+                for r in range(r1 + step, r2, step):
+                    display_grid[r][c1] = char
+
+        # Print the grid
+        for row in display_grid:
+            print(" ".join(row))
+        print()
+
